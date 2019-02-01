@@ -1,0 +1,51 @@
+{
+  "name": "dom-display-detector-react",
+  "version": "1.0.0",
+  "description": "React integration for DOM Display Detector.",
+  "keywords": [
+    "javascript",
+    "react",
+    "display",
+    "scroll"
+  ],
+  "author": {
+    "name": "Cevad Tokatli",
+    "email": "cevadtokatli@hotmail.com",
+    "url": "http://cevadtokatli.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cevadtokatli/dom-display-detector-react"
+  },
+  "files": [
+    "src",
+    "dist",
+    "rollup.config.js"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c && uglifyjs dist/dom-display-detector.js -o dist/dom-display-detector.min.js --comments /dom-display-detector/"
+  },
+  "license": "MIT",
+  "main": "dist/dom-display-detector.min.js",
+  "module": "dist/dom-display-detector.esm.js",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "dom-display-detector": "^1.0.3",
+    "prop-types": "^15.6.2",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "rollup": "^1.1.2",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "uglify-js": "^3.4.9"
+  },
+  "peerDependencies": {
+    "react-dom": "^16.7.0"
+  }
+}
