@@ -1,6 +1,6 @@
 /*!
  * DOM Display Detector React
- * version: 1.0.0
+ * version: 1.0.1
  *  author: Cevad Tokatli <cevadtokatli@hotmail.com>
  * website: http://cevadtokatli.com
  *  github: https://github.com/cevadtokatli/dom-display-detector-react
@@ -659,7 +659,7 @@ var propTypes = createCommonjsModule(function (module) {
 var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
   /*!
    *   DOM Display Detector
-   *   version: 1.0.3
+   *   version: 2.0.0
    *    author: Cevad Tokatli <cevadtokatli@hotmail.com>
    *   website: http://cevadtokatli.com
    *    github: https://github.com/cevadtokatli/dom-display-detector
@@ -669,55 +669,48 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
     factory(exports);
   })(commonjsGlobal, function (exports) {
 
-    var classCallCheck = function classCallCheck(instance, Constructor) {
+    function _classCallCheck(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
         throw new TypeError("Cannot call a class as a function");
       }
-    };
+    }
 
-    var createClass = function () {
-      function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
+    function _defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
       }
+    }
 
-      return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) defineProperties(Constructor, staticProps);
-        return Constructor;
-      };
-    }();
+    function _createClass(Constructor, protoProps, staticProps) {
+      if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) _defineProperties(Constructor, staticProps);
+      return Constructor;
+    }
 
-    var elements = [],
-        _init = false;
+    function _readOnlyError(name) {
+      throw new Error('"' + name + '" is read-only');
+    }
+
+    var elements = [];
 
     var DOMDisplayDetector = function () {
       function DOMDisplayDetector() {
-        classCallCheck(this, DOMDisplayDetector);
+        _classCallCheck(this, DOMDisplayDetector);
       }
 
-      createClass(DOMDisplayDetector, null, [{
+      _createClass(DOMDisplayDetector, null, [{
         key: "init",
         value: function init() {
-          if (!window) {
-            throw new Error("DOM Display Detector needs a window");
+          if (typeof window === "undefined") {
+            return;
           }
 
-          _init = true;
           window.addEventListener("resize", this.detect, true);
           window.addEventListener("scroll", this.detect, true);
-        }
-      }, {
-        key: "destroy",
-        value: function destroy() {
-          _init = false;
-          window.removeEventListener("resize", this.detect);
-          window.removeEventListener("scroll", this.detect);
         }
       }, {
         key: "bind",
@@ -743,18 +736,14 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
         key: "unbind",
         value: function unbind(elm) {
           var elms = this.getElement(elm);
-          elements = elements.filter(function (e) {
+          elements = (_readOnlyError("elements"), elements.filter(function (e) {
             if (elms.indexOf(e.elm) > -1 && !e.bindOnce) {
               e.elm.scrollAnimationBound = false;
               return false;
             }
 
             return true;
-          });
-
-          if (_init && elements.length == 0) {
-            this.destroy();
-          }
+          }));
         }
       }, {
         key: "bindElement",
@@ -762,7 +751,7 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
           var _this3 = this;
 
           if (!elm.scrollAnimationBound) {
-            var display = window.getComputedStyle(elm, null).getPropertyValue("display");
+            var display = window.getComputedStyle(elm, null).display;
 
             if (display == "none" || elm.offsetWidth != 0 || elm.offsetHeight != 0) {
               elm.scrollAnimationBound = true;
@@ -776,10 +765,6 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
               elements.push(e);
               var w = this.getWindowPosition();
               this.isSeen(e, w);
-
-              if (!_init) {
-                this.init();
-              }
             } else {
               setTimeout(function () {
                 _this3.bindElement(elm, appearCallback, disCallback, bindOnce);
@@ -811,72 +796,88 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
       }, {
         key: "isSeen",
         value: function isSeen(e, w) {
-          var elm = e.elm,
-              offset = this.getOffset(elm),
-              width = elm.offsetWidth,
-              height = elm.offsetHeight,
-              left = offset.left,
-              top = offset.top;
+          var seen = true,
+              elm = e.elm,
+              val = this.getOffset(elm),
+              scrollParents = this.getScrollParents(elm);
 
-          if (w.height + w.y >= top && w.y <= top + height && w.width + w.x >= left && w.x <= left + width) {
+          for (var i in scrollParents) {
+            var parent = scrollParents[i],
+                p = this.getOffset(parent),
+                pVal = this.getOffsetValues(parent, p);
+
+            if (this.checkIfSeen(pVal, val)) {
+              this.setSeenPart(parent, pVal, val);
+            } else {
+              seen = false;
+              break;
+            }
+          }
+
+          if (seen && !this.checkIfSeen(w, val)) {
+            seen = false;
+          }
+
+          if (seen) {
             if (!e.seen) {
               e.seen = true;
 
-              if (e.bindOnce && e.invokedDisCallback) {
-                var i = elements.indexOf(e);
-                elements.splice(i, 1);
+              if (typeof e.appearCallback == "function") {
+                e.appearCallback({
+                  target: e.elm
+                });
+              }
 
-                if (_init && elements.length == 0) {
-                  this.destroy();
-                }
-              } else {
-                e.invokedAppearCallback = true;
+              if (e.bindOnce) {
+                var _i = elements.indexOf(e);
 
-                if (typeof e.appearCallback == "function") {
-                  e.appearCallback({
-                    target: e.elm
-                  });
-                }
+                elements.splice(_i, 1);
               }
             }
           } else {
             if (e.seen) {
               e.seen = false;
 
-              if (e.bindOnce && e.invokedAppearCallback) {
-                var i = elements.indexOf(e);
-                elements.splice(i, 1);
-
-                if (_init && elements.length == 0) {
-                  this.destroy();
-                }
-              } else {
-                e.invokedDisCallback = true;
-
-                if (typeof e.disCallback == "function") {
-                  e.disCallback({
-                    target: e.elm
-                  });
-                }
+              if (typeof e.disCallback == "function") {
+                e.disCallback({
+                  target: e.elm
+                });
               }
             }
           }
         }
       }, {
+        key: "checkIfSeen",
+        value: function checkIfSeen(p, c) {
+          if (p.bottom >= c.top && p.y <= c.top + c.height && p.right >= c.left && p.x <= c.left + c.width) {
+            return true;
+          }
+
+          return false;
+        }
+      }, {
         key: "getWindowPosition",
         value: function getWindowPosition() {
+          var width = window.innerWidth,
+              height = window.innerHeight,
+              x = window.pageXOffset,
+              y = window.pageYOffset;
           return {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            x: window.pageXOffset,
-            y: window.pageYOffset
+            width: width,
+            height: height,
+            x: x,
+            y: y,
+            right: width + x,
+            bottom: height + y
           };
         }
       }, {
         key: "getOffset",
         value: function getOffset(elm) {
           var left = 0,
-              top = 0;
+              top = 0,
+              width = elm.offsetWidth,
+              height = elm.offsetHeight;
 
           do {
             if (!isNaN(elm.offsetLeft)) {
@@ -892,14 +893,85 @@ var domDisplayDetector_min = createCommonjsModule(function (module, exports) {
 
           return {
             left: left,
-            top: top
+            top: top,
+            width: width,
+            height: height
           };
         }
+      }, {
+        key: "getScrollParents",
+        value: function getScrollParents(elm) {
+          var parents = [],
+              style = window.getComputedStyle(elm, null),
+              excludeStaticParent = style.position == "absolute";
+
+          if (style.position == "fixed") {
+            return null;
+          }
+
+          for (var parent = elm; parent = parent.parentElement;) {
+            style = window.getComputedStyle(parent, null);
+
+            if (excludeStaticParent && style.position == "static") {
+              continue;
+            }
+
+            if (/(auto|scroll|hidden)/.test(style.overflow + style.overflowY + style.overflowX)) {
+              parents.push(parent);
+            }
+          }
+
+          return parents;
+        }
+      }, {
+        key: "getOffsetValues",
+        value: function getOffsetValues(el, val) {
+          var width = val.width,
+              height = val.height,
+              x = val.left + el.scrollLeft,
+              y = val.top + el.scrollTop;
+          return {
+            width: width,
+            height: height,
+            x: x,
+            y: y,
+            right: width + x,
+            bottom: height + y
+          };
+        }
+      }, {
+        key: "setSeenPart",
+        value: function setSeenPart(parent, p, c) {
+          var val;
+
+          if ((val = p.x - c.left) > 0) {
+            c.width -= val;
+            c.left -= val;
+          }
+
+          if ((val = c.width + c.left - p.right) > 0) {
+            c.width -= val;
+          }
+
+          if ((val = p.y - c.top) > 0) {
+            c.height -= val;
+            c.top += val;
+          }
+
+          if ((val = c.height + c.top - p.bottom) > 0) {
+            c.height -= val;
+          }
+
+          c.left -= parent.scrollLeft;
+          c.top -= parent.scrollTop;
+        }
       }]);
+
       return DOMDisplayDetector;
     }();
 
     DOMDisplayDetector.detect = DOMDisplayDetector.detect.bind(DOMDisplayDetector);
+    DOMDisplayDetector.init.call(DOMDisplayDetector);
     var bind = DOMDisplayDetector.bind.bind(DOMDisplayDetector);
     var bindOnce = DOMDisplayDetector.bindOnce.bind(DOMDisplayDetector);
     var unbind = DOMDisplayDetector.unbind.bind(DOMDisplayDetector);

@@ -1,6 +1,6 @@
 {
   "name": "dom-display-detector-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React integration for DOM Display Detector.",
   "keywords": [
     "javascript",
@@ -33,7 +33,7 @@
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
-    "dom-display-detector": "^1.0.3",
+    "dom-display-detector": "^2.0.0",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
